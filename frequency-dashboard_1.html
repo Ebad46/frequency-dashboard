@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Frequency Distribution & Graphs Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-section {
+            grid-column: 1 / -1;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .button-group button {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .example-btn {
+            background: #17a2b8;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+        }
+
+        .data-display {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 2px solid #667eea;
+        }
+
+        .data-display p {
+            font-size: 0.95em;
+            word-break: break-all;
+            color: #555;
+        }
+
+        /* Table Styles */
+        .table-section {
+            grid-column: 1 / -1;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        tr:hover {
+            background: #f0f0f0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .total-row {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .total-row td {
+            border-bottom: none;
+        }
+
+        /* Chart Styles */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-top: 20px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+
+        .chart-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .chart-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Statistics Box */
+        .stats-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            grid-column: 1 / -1;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        /* Stem and Leaf */
+        .stem-leaf {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 20px;
+            overflow-x: auto;
+        }
+
+        .stem-column {
+            text-align: right;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .leaf-column {
+            font-weight: 600;
+            color: #764ba2;
+            word-wrap: break-word;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .interpretation {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .interpretation h4 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .interpretation p {
+            color: #0056b3;
+            line-height: 1.6;
+            font-size: 0.9em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .modal-body p {
+            margin-bottom: 15px;
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 2em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-box {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .content {
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.4em;
+            }
+
+            .header p {
+                font-size: 0.9em;
+            }
+
+            input[type="text"],
+            input[type="number"] {
+                padding: 10px;
+                font-size: 16px;
+            }
+
+            button {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            table {
+                font-size: 0.8em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .modal-content {
+                margin: 20px;
+                max-height: 90vh;
+            }
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        .help-icon {
+            cursor: pointer;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Frequency Distribution & Graphs Dashboard</h1>
+            <p>Enter raw data and watch it transform into organized statistics and beautiful visualizations</p>
+        </div>
+
+        <div class="content">
+            <!-- Input Section -->
+            <div class="section input-section">
+                <h2>📥 Step 1: Input Raw Data
+                    <span class="help-icon" onclick="showModal('helpInput')">?</span>
+                </h2>
+
+                <div class="alert error" id="alert"></div>
+
+                <div class="input-group">
+                    <div>
+                        <label>Enter Data (comma-separated)</label>
+                        <input type="text" id="dataInput" placeholder="e.g., 100, 105, 110, 115, 120...">
+                    </div>
+                    <div>
+                        <label>Number of Classes (5-20)</label>
+                        <input type="number" id="numClasses" value="6" min="5" max="20">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <div class="button-group">
+                            <button onclick="loadExample()">📋 Example</button>
+                            <button class="clear-btn" onclick="clearAll()">🗑️ Clear</button>
+                            <button onclick="analyzeData()">🔍 Analyze</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-display" id="dataDisplay" style="display: none;">
+                    <p><strong>Raw Data:</strong></p>
+                    <p id="rawData"></p>
+                </div>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="stats-box" id="statsBox" style="display: none;"></div>
+
+            <!-- Frequency Distribution Table -->
+            <div class="section table-section" id="tableSection" style="display: none;">
+                <h2>📊 Step 2: Frequency Distribution Table
+                    <span class="help-icon" onclick="showModal('helpTable')">?</span>
+                </h2>
+                <div id="tableContainer"></div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-grid" id="chartsSection" style="display: none;">
+                <!-- Histogram -->
+                <div class="chart-section">
+                    <h3>📊 Histogram</h3>
+                    <div class="chart-container">
+                        <canvas id="histogramChart"></canvas>
+                    </div>
+                    <div class="interpretation">
+                        <h4>💡 How to Read:</h4>
+                        <p>Shows frequency per class. Bars touch each other. Tallest bar = most common range.</p>
+                    </div>
+                </div>
+
+                <!-- Frequency Polygon -->
+                <div class="chart-section">
+                    <h3>📈 Frequency Polygon</h3>
+                    <div class="chart-container">
+                        <canvas id="polygonChart"></canvas>
+                    </div>
+                    <div class="interpretation">
+                        <h4>💡 How to Read:</h4>
+                        <p>Line graph using class midpoints. Good for comparing multiple distributions.</p>
+                    </div>
+                </div>
+
+                <!-- Ogive -->
+                <div class="chart-section">
+                    <h3>📊⬆️ Ogive (Cumulative Frequency)</h3>
+                    <div class="chart-container">
+                        <canvas id="ogiveChart"></canvas>
+                    </div>
+                    <div class="interpretation">
+                        <h4>💡 How to Read:</h4>
+                        <p>Always increases! Read any point to find "how many values ≤ this boundary?"</p>
+                    </div>
+                </div>
+
+                <!-- Stem-and-Leaf -->
+                <div class="chart-section">
+                    <h3>🌿 Stem-and-Leaf Plot</h3>
+                    <div class="stem-leaf" id="stemLeafPlot"></div>
+                    <div class="interpretation">
+                        <h4>💡 How to Read:</h4>
+                        <p>Left = stems (tens), Right = leaves (ones). Shows actual values & distribution pattern.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Insights -->
+            <div class="section" id="insightsSection" style="display: none;">
+                <h2>🎯 Key Insights</h2>
+                <div id="insights"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>💡 Pro Tip: Try the example data first to see how everything works!</p>
+            <p style="margin-top: 10px;">Made for statistics students preparing for frequency distribution exams</p>
+        </div>
+    </div>
+
+    <!-- Help Modals -->
+    <div id="helpInput" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('helpInput')">&times;</button>
+            <div class="modal-header">📥 How to Input Data</div>
+            <div class="modal-body">
+                <p><strong>Enter your raw numerical data separated by commas.</strong></p>
+                <p>Example: <code>100, 105, 110, 115, 120, 125</code></p>
+                <p>You can paste data from Excel or any spreadsheet.</p>
+                <p><strong>Number of Classes:</strong> Usually 5-20. Start with 6 classes and adjust if needed.</p>
+                <p>The app will:</p>
+                <ol style="margin-left: 20px;">
+                    <li>Calculate the range of your data</li>
+                    <li>Determine class width automatically</li>
+                    <li>Create frequency distribution table</li>
+                    <li>Generate all four graphs</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div id="helpTable" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('helpTable')">&times;</button>
+            <div class="modal-header">📊 Understanding the Table</div>
+            <div class="modal-body">
+                <p><strong>Class Limits:</strong> The range labels (e.g., 100-109)</p>
+                <p><strong>Class Boundaries:</strong> More precise with decimals (99.5-109.5) to prevent gaps</p>
+                <p><strong>Midpoint:</strong> Center of the class (e.g., 104.5). Used for frequency polygon.</p>
+                <p><strong>Frequency:</strong> How many data values fall in this class</p>
+                <p><strong>Cumulative Frequency:</strong> Running total up to this class</p>
+                <p><strong>Relative Frequency:</strong> Percentage (frequency ÷ total × 100%)</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let charts = {};
+
+        function showModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        function loadExample() {
+            document.getElementById('dataInput').value = `165, 195, 205, 230, 210, 200, 185, 220, 215, 225, 
+175, 205, 215, 190, 245, 235, 250, 210, 240, 215, 
+180, 210, 225, 190, 195, 205, 220, 240, 230, 225, 
+185, 215, 225, 200, 245, 210, 220, 185, 235, 215, 
+190, 210, 230, 205, 215, 220, 225, 240, 245, 255`;
+            document.getElementById('numClasses').value = 6;
+        }
+
+        function clearAll() {
+            document.getElementById('dataInput').value = '';
+            document.getElementById('numClasses').value = 6;
+            document.getElementById('dataDisplay').style.display = 'none';
+            document.getElementById('tableSection').style.display = 'none';
+            document.getElementById('chartsSection').style.display = 'none';
+            document.getElementById('statsBox').style.display = 'none';
+            document.getElementById('insightsSection').style.display = 'none';
+            document.getElementById('alert').classList.remove('show');
+        }
+
+        function showAlert(message, type = 'error') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        function analyzeData() {
+            try {
+                const dataInput = document.getElementById('dataInput').value.trim();
+                if (!dataInput) {
+                    showAlert('❌ Please enter some data first!');
+                    return;
+                }
+
+                const rawData = dataInput.split(',').map(x => {
+                    const num = parseFloat(x.trim());
+                    if (isNaN(num)) throw new Error('Invalid number found');
+                    return num;
+                }).sort((a, b) => a - b);
+
+                const numClasses = parseInt(document.getElementById('numClasses').value);
+                
+                if (numClasses < 5 || numClasses > 20) {
+                    showAlert('❌ Number of classes must be between 5 and 20');
+                    return;
+                }
+
+                document.getElementById('rawData').textContent = rawData.join(', ');
+                document.getElementById('dataDisplay').style.display = 'block';
+
+                const stats = calculateStatistics(rawData, numClasses);
+
+                displayStatistics(stats);
+                displayFrequencyTable(stats);
+                displayCharts(stats);
+                displayInsights(stats);
+
+                showAlert('✅ Data analyzed successfully!', 'success');
+
+            } catch (error) {
+                showAlert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        function calculateStatistics(data, numClasses) {
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const range = max - min;
+            
+            let width = range / numClasses;
+            width = Math.ceil(width * 10) / 10;
+            if (width === 0) width = 1;
+
+            const classes = [];
+            let lowerLimit = Math.floor(min);
+            
+            for (let i = 0; i < numClasses; i++) {
+                const upper = lowerLimit + width - 1;
+                classes.push({
+                    lower: lowerLimit,
+                    upper: upper,
+                    lowerBoundary: lowerLimit - 0.5,
+                    upperBoundary: upper + 0.5,
+                    midpoint: (lowerLimit + upper) / 2,
+                    frequency: 0
+                });
+                lowerLimit += width;
+            }
+
+            data.forEach(value => {
+                for (let i = 0; i < classes.length; i++) {
+                    if (value >= classes[i].lower && value <= classes[i].upper) {
+                        classes[i].frequency++;
+                        break;
+                    }
+                }
+            });
+
+            let cumulativeFreq = 0;
+            classes.forEach(c => {
+                cumulativeFreq += c.frequency;
+                c.cumulativeFrequency = cumulativeFreq;
+                c.relativeFrequency = ((c.frequency / data.length) * 100).toFixed(2);
+            });
+
+            const sum = data.reduce((a, b) => a + b, 0);
+            const mean = (sum / data.length).toFixed(2);
+            const median = data.length % 2 === 0 
+                ? ((data[data.length/2-1] + data[data.length/2]) / 2).toFixed(2)
+                : data[Math.floor(data.length/2)].toFixed(2);
+
+            const modalClass = classes.reduce((max, c) => c.frequency > max.frequency ? c : max);
+
+            return {
+                rawData: data,
+                classes,
+                min,
+                max,
+                range,
+                width,
+                mean,
+                median,
+                mode: `${modalClass.lower.toFixed(0)}-${modalClass.upper.toFixed(0)}`,
+                modeFreq: modalClass.frequency,
+                n: data.length
+            };
+        }
+
+        function displayStatistics(stats) {
+            const statsBox = document.getElementById('statsBox');
+            statsBox.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-label">Sample Size</div>
+                    <div class="stat-value">${stats.n}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Minimum</div>
+                    <div class="stat-value">${stats.min}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Maximum</div>
+                    <div class="stat-value">${stats.max}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Range</div>
+                    <div class="stat-value">${stats.range}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Mean</div>
+                    <div class="stat-value">${stats.mean}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Median</div>
+                    <div class="stat-value">${stats.median}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Class Width</div>
+                    <div class="stat-value">${stats.width}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Modal Class</div>
+                    <div class="stat-value">${stats.mode}</div>
+                </div>
+            `;
+            statsBox.style.display = 'grid';
+        }
+
+        function displayFrequencyTable(stats) {
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Class Limits</th>
+                            <th>Boundaries</th>
+                            <th>Midpoint</th>
+                            <th>Frequency</th>
+                            <th>Cumulative Freq</th>
+                            <th>Relative Freq (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            stats.classes.forEach(c => {
+                html += `
+                    <tr>
+                        <td>${c.lower.toFixed(0)}-${c.upper.toFixed(0)}</td>
+                        <td>${c.lowerBoundary.toFixed(1)}-${c.upperBoundary.toFixed(1)}</td>
+                        <td>${c.midpoint.toFixed(1)}</td>
+                        <td>${c.frequency}</td>
+                        <td>${c.cumulativeFrequency}</td>
+                        <td>${c.relativeFrequency}%</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    <tr class="total-row">
+                        <td colspan="3"><strong>TOTAL</strong></td>
+                        <td><strong>${stats.n}</strong></td>
+                        <td></td>
+                        <td><strong>100.00%</strong></td>
+                    </tr>
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('tableContainer').innerHTML = html;
+            document.getElementById('tableSection').style.display = 'block';
+        }
+
+        function displayCharts(stats) {
+            const labels = stats.classes.map(c => `${c.lower.toFixed(0)}-${c.upper.toFixed(0)}`);
+            const boundaries = stats.classes.map(c => c.lowerBoundary.toFixed(1));
+            const midpoints = stats.classes.map(c => c.midpoint.toFixed(1));
+            const frequencies = stats.classes.map(c => c.frequency);
+            const cumulativeFreqs = stats.classes.map(c => c.cumulativeFrequency);
+
+            const chartConfig = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: { font: { size: 12 } }
+                    }
+                }
+            };
+
+            // Histogram
+            const histCtx = document.getElementById('histogramChart').getContext('2d');
+            if (charts.histogram) charts.histogram.destroy();
+            charts.histogram = new Chart(histCtx, {
+                type: 'bar',
+                data: {
+                    labels: boundaries,
+                    datasets: [{
+                        label: 'Frequency',
+                        data: frequencies,
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                        borderColor: '#667eea',
+                        borderWidth: 2,
+                        borderRadius: 0
+                    }]
+                },
+                options: {
+                    ...chartConfig,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Frequency' } }
+                    }
+                }
+            });
+
+            // Frequency Polygon
+            const polygonCtx = document.getElementById('polygonChart').getContext('2d');
+            if (charts.polygon) charts.polygon.destroy();
+            charts.polygon = new Chart(polygonCtx, {
+                type: 'line',
+                data: {
+                    labels: midpoints,
+                    datasets: [{
+                        label: 'Frequency',
+                        data: frequencies,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: chartConfig
+            });
+
+            // Ogive
+            const ogiveCtx = document.getElementById('ogiveChart').getContext('2d');
+            if (charts.ogive) charts.ogive.destroy();
+            
+            const ogiveLabels = ['Start'];
+            const ogiveFreqs = [0];
+            stats.classes.forEach((c, i) => {
+                ogiveLabels.push(c.upperBoundary.toFixed(1));
+                ogiveFreqs.push(c.cumulativeFrequency);
+            });
+
+            charts.ogive = new Chart(ogiveCtx, {
+                type: 'line',
+                data: {
+                    labels: ogiveLabels,
+                    datasets: [{
+                        label: 'Cumulative Frequency',
+                        data: ogiveFreqs,
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#764ba2',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: chartConfig
+            });
+
+            document.getElementById('chartsSection').style.display = 'grid';
+        }
+
+        function displayInsights(stats) {
+            const mostCommon = stats.classes.reduce((max, c) => c.frequency > max.frequency ? c : max);
+            const percentMostCommon = ((mostCommon.frequency / stats.n) * 100).toFixed(1);
+
+            const html = `
+                <div class="interpretation">
+                    <h4>📍 Distribution Pattern</h4>
+                    <p>Most common range: <strong>${mostCommon.lower.toFixed(0)}-${mostCommon.upper.toFixed(0)}</strong> 
+                    with <strong>${mostCommon.frequency}</strong> values (${percentMostCommon}%)</p>
+                </div>
+                <div class="interpretation">
+                    <h4>📊 Spread Analysis</h4>
+                    <p>Data ranges from ${stats.min} to ${stats.max} (range: ${stats.range}). 
+                    Average value is ${stats.mean}, with the middle value at ${stats.median}.</p>
+                </div>
+                <div class="interpretation">
+                    <h4>💡 How to Read the Graphs</h4>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Histogram:</strong> Compare bar heights to see which ranges are most/least common</li>
+                        <li><strong>Polygon:</strong> Overlay another dataset to compare distributions</li>
+                        <li><strong>Ogive:</strong> Find how many values are below any given boundary</li>
+                        <li><strong>Stem-Leaf:</strong> See actual values while maintaining the grouped pattern</li>
+                    </ul>
+                </div>
+            `;
+
+            document.getElementById('insights').innerHTML = html;
+            document.getElementById('insightsSection').style.display = 'block';
+
+            createStemAndLeaf(stats);
+        }
+
+        function createStemAndLeaf(stats) {
+            const stemLeafMap = {};
+            
+            stats.rawData.forEach(value => {
+                const stem = Math.floor(value / 10);
+                const leaf = Math.floor(value % 10);
+                
+                if (!stemLeafMap[stem]) {
+                    stemLeafMap[stem] = [];
+                }
+                stemLeafMap[stem].push(leaf);
+            });
+
+            Object.keys(stemLeafMap).forEach(stem => {
+                stemLeafMap[stem].sort((a, b) => a - b);
+            });
+
+            let html = '';
+            Object.keys(stemLeafMap).sort((a, b) => a - b).forEach(stem => {
+                const leaves = stemLeafMap[stem].join(' ');
+                html += `
+                    <div class="stem-column">${stem} |</div>
+                    <div class="leaf-column">${leaves}</div>
+                `;
+            });
+
+            document.getElementById('stemLeafPlot').innerHTML = html;
+        }
+
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
